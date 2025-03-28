@@ -1,0 +1,29 @@
+name: Build pfSense Test Package
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run FreeBSD VM and build package
+        uses: vmactions/freebsd-vm@v1
+        with:
+          release: '13.2'
+          run: |
+            sudo pkg install -y pkg
+            sh ./build.sh
+
+      - name: Upload built package as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-package-repo
+          path: repo/
+
