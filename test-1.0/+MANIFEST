@@ -1,0 +1,13 @@
+{
+  "name": "test",
+  "version": "1.0",
+  "comment": "Test package for pfSense custom repo",
+  "maintainer": "you@example.com",
+  "origin": "custom/test",
+  "www": "https://github.com/bonomani/pfsense-custom",
+  "prefix": "/usr/local",
+  "licenselogic": "single",
+  "licenses": ["BSD"],
+  "flatsize": 1024,
+  "desc": "Simple test package to validate custom pfSense repo"
+}
