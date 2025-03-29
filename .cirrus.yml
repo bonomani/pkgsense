@@ -1,11 +1,9 @@
-freebsd_instance:
-  image: freebsd-13-2
-
-freebsd_build:
-  name: Build FreeBSD .txz
-  instance: freebsd_instance
+task:
+  name: Build FreeBSD Package
+  freebsd_instance:
+    image: freebsd-13-2
   install_script:
-    - sudo pkg install -y git pkg
+    - sudo pkg install -y pkg
   script:
     - sh ./build.sh
   artifacts:
