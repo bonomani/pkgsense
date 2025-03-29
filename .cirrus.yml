@@ -7,11 +7,10 @@ task:
     - sudo pkg install -y pkg git
 
   script:
-    - >
-      cd test
-      echo "🛠 Building test package"
-      sh ./build.sh
-      cd ..
+    - cd test
+    - echo "🛠  Building test package"
+    - sh ./build.sh
+    - cd ..
 
   artifacts:
     test_repo:
