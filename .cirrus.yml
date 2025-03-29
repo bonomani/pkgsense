@@ -1,35 +1,65 @@
 task:
-  name: Build and Deploy pfSense Test Package
+  name: Build and Deploy Multiple pfSense Packages
   freebsd_instance:
-    image_family: freebsd-14-2
+    image_family: freebsd-14-2  # Ensure the FreeBSD image exists in Cirrus CI
 
   install_script:
-    - sudo pkg install -y pkg git
+    - sudo pkg install -y pkg git  # Install required dependencies
 
   script:
-    - cd test
-    - echo "🛠  Building test package"
-    - sh ./build.sh
-    - cd ..
+    # Iterate through all directories in the test/ directory and run build.sh for each package
+    - echo "🛠 Building all test packages..."
+    - |
+      for pkg_dir in test/*; do
+        if [ -d "$pkg_dir" ]; then
+          cd "$pkg_dir"
+          echo "🛠 Building package: $(basename $pkg_dir)"
+          sh ./build.sh  # Run build script for each package directory
+          cd ..
+        fi
+      done
 
   artifacts:
     test_repo:
-      path: test/repo
+      path: test/repo  # Path where the package files will be generated
 
   env:
-    GH_TOKEN: ENCRYPTED[GH_TOKEN]
+    GH_TOKEN: ENCRYPTED[GH_TOKEN]  # Securely pass the GitHub token
 
   post_script:
+    # Configure Git for pushing changes
     - git config --global user.name "Cirrus CI"
     - git config --global user.email "ci@cirrus-ci.com"
     - git clone --depth 1 --branch gh-pages https://bonomani:${GH_TOKEN}@github.com/bonomani/pkgsense.git gh-pages
-    - sh -c 'for dir in */repo; do cp -r "$dir"/* gh-pages/; done'
+
+    # Handle multiple packages and place them into 'repo/' subdirectories
+    - echo "📦 Handling multiple packages..."
+    - |
+      for pkg_dir in test/*; do
+        if [ -d "$pkg_dir" ]; then
+          pkg_name=$(basename "$pkg_dir")
+          echo "📦 Copying files for package: $pkg_name"
+          mkdir -p "gh-pages/repo/$pkg_name"  # Create directory for each package in the repo folder
+          cp -r "$pkg_dir/repo/*" "gh-pages/repo/$pkg_name/"  # Copy package files to respective subdirectory
+        fi
+      done
+
+    # Make sure GitHub Pages doesn't process files with Jekyll
     - cd gh-pages
-    - touch .nojekyll
+    - touch .nojekyll  # Disable Jekyll processing
+
+    # Commit and push changes to 'gh-pages'
     - git add .
-    - git commit -m "🔄 Auto-publish test package from Cirrus CI" || echo "✅ Aucun changement à publier"
+    - git commit -m "🔄 Auto-publish multiple packages from Cirrus CI" || echo "✅ Aucun changement à publier"
     - git push origin gh-pages
-    - echo "🌐 Déployé sur : https://bonomani.github.io/pkgsense/"
-    - echo "📦 Package : https://bonomani.github.io/pkgsense/test-1.0.txz"
-    - echo "📄 Index   : https://bonomani.github.io/pkgsense/packagesite.yaml"
+
+    # Dynamically display deployment URLs for each package
+    - |
+      for pkg_dir in test/*; do
+        if [ -d "$pkg_dir" ]; then
+          pkg_name=$(basename "$pkg_dir")
+          echo "🌐 Package deployed: https://bonomani.github.io/pkgsense/$pkg_name/"
+          echo "📦 Package: https://bonomani.github.io/pkgsense/$pkg_name/$pkg_name.txz"
+        fi
+      done
 
