@@ -1,10 +1,7 @@
-freebsd_instance:
-  image_family: freebsd-13-2
-
-task:
-  name: Build FreeBSD pkg
+freebsd_task:
+  os: freebsd
   install_script:
-    - sudo pkg install -y git pkg
+    - pkg install -y git pkg
   script:
     - sh ./build.sh
   artifacts:
