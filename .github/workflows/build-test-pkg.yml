@@ -7,15 +7,21 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: freebsd-latest
+    name: Build on FreeBSD
 
     steps:
-      - name: Start FreeBSD builder via Cirrus
-        uses: cirruslabs/github-action-freebsd@v1
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install dependencies and build package
+        run: |
+          sudo pkg install -y pkg
+          sh ./build.sh
+
+      - name: Upload built package
+        uses: actions/upload-artifact@v4
         with:
-          run: |
-            sudo pkg install -y git pkg
-            git clone https://github.com/bonomani/pkgsense.git /root/pkgsense
-            cd /root/pkgsense
-            sh ./build.sh
+          name: test-package-repo
+          path: repo/
 

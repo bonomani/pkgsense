@@ -1,12 +1,12 @@
 task:
-  name: Build FreeBSD Package
+  name: Construction du paquet test
   freebsd_instance:
     image_family: freebsd-14-2
   install_script:
     - sudo pkg install -y pkg
   script:
-    - sh ./build.sh
+    - cd test && sh ./build.sh
   artifacts:
     repo:
-      path: repo
+      path: test/repo
 
