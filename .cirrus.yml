@@ -1,7 +1,7 @@
 task:
   name: Build FreeBSD Package
   freebsd_instance:
-    image: freebsd-13-2
+    image_family: freebsd-14-2
   install_script:
     - sudo pkg install -y pkg
   script:
