@@ -7,23 +7,26 @@ on:
 
 jobs:
   build:
-    runs-on: macos-latest
+    runs-on: macos-latest  # required by vmactions
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Run FreeBSD VM and build package
+      - name: Run FreeBSD in VM and build package
         uses: vmactions/freebsd-vm@v1
         with:
           release: '13.2'
+          prepare: |
+            pkg install -y git pkg
+            git clone https://github.com/bonomani/pkgsense.git /root/pkgsense
           run: |
-            sudo pkg install -y pkg
+            cd /root/pkgsense
             sh ./build.sh
 
-      - name: Upload built package as artifact
+      - name: Upload package artifacts
         uses: actions/upload-artifact@v4
         with:
           name: test-package-repo
-          path: repo/
+          path: /root/pkgsense/repo/
 
