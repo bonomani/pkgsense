@@ -1,5 +1,5 @@
 task:
-  name: Build and Deploy All pfSense Packages
+  name: Build and Deploy pfSense Test Package
   freebsd_instance:
     image_family: freebsd-14-2
 
@@ -8,12 +8,10 @@ task:
 
   script:
     - >
-      for dir in */build.sh; do
-        cd "$(dirname "$dir")"
-        echo "🛠 Build $(basename $(pwd))"
-        sh ./build.sh
-        cd ..
-      done
+      cd test
+      echo "🛠 Building test package"
+      sh ./build.sh
+      cd ..
 
   artifacts:
     test_repo:
@@ -23,14 +21,16 @@ task:
     GH_TOKEN: ENCRYPTED[GH_TOKEN]
 
   post_script:
-    - >
-      git config --global user.name "Cirrus CI"
-      git config --global user.email "ci@cirrus-ci.com"
-      git clone --depth 1 --branch gh-pages https://bonomani:${GH_TOKEN}@github.com/bonomani/pkgsense.git gh-pages
-      for dir in */repo; do cp -r $dir/* gh-pages/; done
-      cd gh-pages
-      touch .nojekyll
-      git add .
-      git commit -m "🔄 Auto-publish from Cirrus CI" || echo "✅ Aucun changement à publier"
-      git push origin gh-pages
+    - git config --global user.name "Cirrus CI"
+    - git config --global user.email "ci@cirrus-ci.com"
+    - git clone --depth 1 --branch gh-pages https://bonomani:${GH_TOKEN}@github.com/bonomani/pkgsense.git gh-pages
+    - sh -c 'for dir in */repo; do cp -r "$dir"/* gh-pages/; done'
+    - cd gh-pages
+    - touch .nojekyll
+    - git add .
+    - git commit -m "🔄 Auto-publish test package from Cirrus CI" || echo "✅ Aucun changement à publier"
+    - git push origin gh-pages
+    - echo "🌐 Déployé sur : https://bonomani.github.io/pkgsense/"
+    - echo "📦 Package : https://bonomani.github.io/pkgsense/test-1.0.txz"
+    - echo "📄 Index   : https://bonomani.github.io/pkgsense/packagesite.yaml"
 
