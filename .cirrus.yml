@@ -1,0 +1,10 @@
+freebsd_build:
+  os: freebsd
+  install_script:
+    - pkg install -y pkg
+  script:
+    - sh ./build.sh
+  artifacts:
+    repo:
+      path: repo
+
