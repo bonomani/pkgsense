@@ -1,24 +1,28 @@
 task:
-  name: Build and Deploy pfSense Package
+  name: Build and Deploy All pfSense Packages
   freebsd_instance:
     image_family: freebsd-14-2
   install_script:
     - sudo pkg install -y pkg git
   script:
-    - cd test && sh ./build.sh
+    - for dir in */build.sh; do
+        cd "$(dirname "$dir")" &&
+        echo "🛠 Build $(basename $(pwd))" &&
+        sh ./build.sh &&
+        cd ..;
+      done
   artifacts:
     repo:
-      path: test/repo
+      path: */repo
   env:
     GH_TOKEN: ENCRYPTED[GH_TOKEN]
   post_script:
     - git config --global user.name "Cirrus CI"
     - git config --global user.email "ci@cirrus-ci.com"
-    - git clone --depth 1 --branch gh-pages https://bonomani:${GH_TOKEN}@github.com/bonomani/pkgsense.git gh-pages
-    - cp -r test/repo/* gh-pages/
+    - git clone --depth 1 --branch gh-pages https://${GH_TOKEN}@github.com/bonomani/pkgsense.git gh-pages
+    - for dir in */repo; do cp -r $dir/* gh-pages/; done
     - cd gh-pages
     - touch .nojekyll
     - git add .
     - git commit -m "🔄 Auto-publish from Cirrus CI" || echo "✅ Aucun changement à publier"
     - git push origin gh-pages
-
