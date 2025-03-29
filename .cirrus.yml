@@ -1,12 +1,24 @@
 task:
-  name: Construction du paquet test
+  name: Build and Deploy pfSense Package
   freebsd_instance:
     image_family: freebsd-14-2
   install_script:
-    - sudo pkg install -y pkg
+    - sudo pkg install -y pkg git
   script:
     - cd test && sh ./build.sh
   artifacts:
     repo:
       path: test/repo
+  env:
+    GH_TOKEN: ENCRYPTED[GH_TOKEN]
+  post_script:
+    - git config --global user.name "Cirrus CI"
+    - git config --global user.email "ci@cirrus-ci.com"
+    - git clone --depth 1 --branch gh-pages https://bonomani:${GH_TOKEN}@github.com/bonomani/pkgsense.git gh-pages
+    - cp -r test/repo/* gh-pages/
+    - cd gh-pages
+    - touch .nojekyll
+    - git add .
+    - git commit -m "🔄 Auto-publish from Cirrus CI" || echo "✅ Aucun changement à publier"
+    - git push origin gh-pages
 
