@@ -5,6 +5,6 @@ freebsd_build:
   script:
     - sh ./build.sh
   artifacts:
-    repo: 
+    repo:
       path: repo
 
