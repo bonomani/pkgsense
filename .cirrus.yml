@@ -19,7 +19,7 @@ task:
   post_script:
     - git config --global user.name "Cirrus CI"
     - git config --global user.email "ci@cirrus-ci.com"
-    - git clone --depth 1 --branch gh-pages git@github.com:bonomani/pkgsense.git gh-pages
+    - git clone --depth 1 --branch gh-pages https://bonomani:${GH_TOKEN}@github.com/bonomani/pkgsense.git gh-pages
     - sh -c 'for dir in */repo; do cp -r "$dir"/* gh-pages/; done'
     - cd gh-pages
     - touch .nojekyll
