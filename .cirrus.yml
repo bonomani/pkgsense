@@ -16,6 +16,9 @@ task:
     test_repo:
       path: test/repo
 
+  env:
+    GH_TOKEN: ENCRYPTED[GH_TOKEN]
+
   post_script:
     - echo ${GH_TOKEN} | cut -c 1-10
     - git config --global user.name "Cirrus CI"
