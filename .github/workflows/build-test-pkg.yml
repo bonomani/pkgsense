@@ -7,26 +7,15 @@ on:
 
 jobs:
   build:
-    runs-on: macos-latest  # required by vmactions
+    runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Run FreeBSD in VM and build package
-        uses: vmactions/freebsd-vm@v1
+      - name: Start FreeBSD builder via Cirrus
+        uses: cirruslabs/github-action-freebsd@v1
         with:
-          release: '13.2'
-          prepare: |
-            pkg install -y git pkg
-            git clone https://github.com/bonomani/pkgsense.git /root/pkgsense
           run: |
+            sudo pkg install -y git pkg
+            git clone https://github.com/bonomani/pkgsense.git /root/pkgsense
             cd /root/pkgsense
             sh ./build.sh
-
-      - name: Upload package artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: test-package-repo
-          path: /root/pkgsense/repo/
 
