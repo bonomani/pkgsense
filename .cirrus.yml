@@ -7,10 +7,10 @@ task:
     - sudo pkg install -y pkg git  # Install required dependencies
 
   script:
-    # Iterate through all directories in the test/ directory and run build.sh for each package
-    - echo "🛠 Building all test packages..."
+    # Iterate through all directories in the packages/ directory and run build.sh for each package
+    - echo "🛠 Building all packages..."
     - |
-      for pkg_dir in test/*; do
+      for pkg_dir in packages/*; do
         if [ -d "$pkg_dir" ]; then
           cd "$pkg_dir"
           echo "🛠 Building package: $(basename $pkg_dir)"
@@ -20,8 +20,8 @@ task:
       done
 
   artifacts:
-    test_repo:
-      path: test/repo  # Path where the package files will be generated
+    packages_repo:
+      path: packages/repo  # Path where the package files will be generated
 
   env:
     GH_TOKEN: ENCRYPTED[GH_TOKEN]  # Securely pass the GitHub token
@@ -35,7 +35,7 @@ task:
     # Handle multiple packages and place them into 'repo/' subdirectories
     - echo "📦 Handling multiple packages..."
     - |
-      for pkg_dir in test/*; do
+      for pkg_dir in packages/*; do
         if [ -d "$pkg_dir" ]; then
           pkg_name=$(basename "$pkg_dir")
           echo "📦 Copying files for package: $pkg_name"
@@ -55,7 +55,7 @@ task:
 
     # Dynamically display deployment URLs for each package
     - |
-      for pkg_dir in test/*; do
+      for pkg_dir in packages/*; do
         if [ -d "$pkg_dir" ]; then
           pkg_name=$(basename "$pkg_dir")
           echo "🌐 Package deployed: https://bonomani.github.io/pkgsense/$pkg_name/"
