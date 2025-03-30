@@ -160,7 +160,7 @@ build_package() {
     echo "pkg create -r ${PKGDIR_PATH} -m ${MANIFEST_FILE} -p /dev/null -o ${PKGDIR_PATH} -x '*/build.sh' -x '*/build.log' -x '*/.git'"
 
     # Run the pkg create command and capture both stdout and stderr
-    create_output=$(pkg create -r "${PKGDIR_PATH}" -m "${MANIFEST_FILE}" -p /dev/null -o "${PKGDIR_PATH}" -x "*/build.sh" -x "*/build.log" -x "*/.git" 2>&1)
+    create_output=$(pkg create -r "${PKGDIR_PATH}" -m "${MANIFEST_FILE}" -p /dev/null -o "${PKGDIR_PATH}" -v -x "*/build.sh" -x "*/build.log" -x "*/.git" 2>&1)
 
     # Print the output from the pkg create command (including errors)
     log_message "✅ pkg create output:\n$create_output"
