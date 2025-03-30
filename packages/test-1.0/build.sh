@@ -122,11 +122,11 @@ check_file_structure_recursive() {
         # If the value is an array, it's a file
         if [[ "$(echo "$structure" | jq -r ".\"$key\" | type")" == "array" ]]; then
             for file in $(echo "$structure" | jq -r ".\"$key\"[]"); do
-                check_file_exists "${full_path}/${file}"
+                check_file_exists "${PKGDIR_PATH}/${full_path}/${file}"  # Use PKGDIR_PATH for full path
             done
         # If the value is an object, it's a directory, so recurse
         elif [[ "$(echo "$structure" | jq -r ".\"$key\" | type")" == "object" ]]; then
-            check_directory_exists "$full_path"
+            check_directory_exists "${PKGDIR_PATH}/${full_path}"  # Use PKGDIR_PATH for full path
             check_file_structure_recursive "$full_path" "$(echo "$structure" | jq -r ".\"$key\"")"
         fi
     done
