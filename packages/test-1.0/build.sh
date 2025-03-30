@@ -200,7 +200,7 @@ populate_repo() {
             target_dir="${REPO_DIR}/${repo_name}:${version}:${arch}"
 
             # Create the architecture folder
-            mkdir -p "${target_dir}"
+            mkdir -p "${target_dir}/All"
 
             # Copy the package directly to the architecture-specific folder (no All folder)
             cp "${REPO_DIR}/${PKGNAME}-${PKGVERSION}.pkg" "${target_dir}/All/"
