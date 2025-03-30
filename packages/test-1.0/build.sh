@@ -167,13 +167,20 @@ populate_repo() {
         for arch in $(echo "$ARCHS" | tr -d '"'); do
             log_message "Processing architecture: $arch"
 
-            # Create the directory structure for the package
-            mkdir -p "${target_dir}/${arch}"
-
-            # Copy the built package to the correct repo/version/arch directory
-            cp "${PKGDIR_PATH}/${PKGNAME}-${PKGVERSION}.txz" "${target_dir}/${arch}/"
-
-            log_message "✅ Package copied to: ${target_dir}/${arch}/${PKGNAME}-${PKGVERSION}.txz"
+            # If the architecture is 'any', copy to all supported architectures
+            if [[ "$arch" == "any" ]]; then
+                for supported_arch in "amd64" "i386" "arm64" "armv7" "powerpc64" "mips64" "aarch64"; do
+                    log_message "Copying to supported architecture: $supported_arch"
+                    mkdir -p "${target_dir}/${supported_arch}"
+                    cp "${PKGDIR_PATH}/repo/${PKGNAME}-${PKGVERSION}.txz" "${target_dir}/${supported_arch}/"
+                    log_message "✅ Package copied to: ${target_dir}/${supported_arch}/${PKGNAME}-${PKGVERSION}.txz"
+                done
+            else
+                # Handle the specified architecture (if not 'any')
+                mkdir -p "${target_dir}/${arch}"
+                cp "${PKGDIR_PATH}/repo/${PKGNAME}-${PKGVERSION}.txz" "${target_dir}/${arch}/"
+                log_message "✅ Package copied to: ${target_dir}/${arch}/${PKGNAME}-${PKGVERSION}.txz"
+            fi
         done
     done
 }
