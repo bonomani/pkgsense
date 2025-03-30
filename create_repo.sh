@@ -60,8 +60,8 @@ for repo_dir in "${GLOBAL_REPO_DIR}"/*; do
     if [ -d "${repo_dir}/All" ]; then
         log_message "Running pkg repo for: ${repo_dir}"
 	ls -al "${repo_dir}"
-        pkg repo "${repo_dir}"
-        log_message "✅ Repository metadata created for: ${repo_dir}"
+        pkg repo "${repo_dir}/All"
+        log_message "✅ Repository metadata created for: ${repo_dir}/All"
     fi
 done
 
