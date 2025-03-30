@@ -215,8 +215,8 @@ populate_repo() {
             mkdir -p "${target_dir}/All"
 
             # Copy the package to the All directory
-            cp "${REPO_DIR}/${PKGNAME}-${PKGVERSION}.txz" "${target_dir}/All/"
-            log_message "✅ Package copied to: ${target_dir}/All/${PKGNAME}-${PKGVERSION}.txz"
+            cp "${REPO_DIR}/${PKGNAME}-${PKGVERSION}.pkg" "${target_dir}/All/"
+            log_message "✅ Package copied to: ${target_dir}/All/${PKGNAME}-${PKGVERSION}.pkg"
         done
     done
 }
