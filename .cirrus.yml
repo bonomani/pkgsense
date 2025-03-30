@@ -13,6 +13,7 @@ task:
       for pkg_dir in packages/*; do
         if [ -d "$pkg_dir" ]; then
           cd "$pkg_dir"
+          echo "Current directory: $(pwd)"
           echo "🛠 Building package: $(basename $pkg_dir)"
           sh ./build.sh  # Build each package dynamically
           cd .. 
