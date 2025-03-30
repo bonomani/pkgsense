@@ -9,8 +9,8 @@ task:
   script:
     - echo "🛠  Creating and populating repository..."
     - |
-    # Run the script to populate the repo and generate metadata
-    bash ./create_repo.sh
+       # Run the script to populate the repo and generate metadata
+       bash ./create_repo.sh
 
   artifacts:
     packages_repo:
