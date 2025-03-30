@@ -193,6 +193,7 @@ build_package() {
 
 
 # Function to populate the repo directory with the built package
+# Function to populate the repo directory with the built package
 populate_repo() {
     log_message "📂 Populating repo directory..."
 
@@ -214,20 +215,38 @@ populate_repo() {
             # If the architecture is 'any', copy to all supported architectures
             if [[ "$arch" == "any" ]]; then
                 for supported_arch in "amd64" "i386" "arm64" "armv7" "powerpc64" "mips64" "aarch64"; do
-                    log_message "Copying to supported architecture: $supported_arch"
-                    mkdir -p "${REPO_DIR}/${repo_name}:${version}:${supported_arch}"
-                    cp "${REPO_DIR}/${PKGNAME}-${PKGVERSION}.txz" "${REPO_DIR}/${repo_name}:${version}:${supported_arch}/"
-                    log_message "✅ Package copied to: ${REPO_DIR}/${repo_name}:${version}:${supported_arch}/${PKGNAME}-${PKGVERSION}.txz"
+                    log_message "Creating directory for supported architecture: $supported_arch"
+                    # Create the architecture folder inside the version folder and the All folder
+                    mkdir -p "${REPO_DIR}/${repo_name}:${version}:${supported_arch}/All"
+                    
+                    # Copy the package to the All directory
+                    cp "${REPO_DIR}/${PKGNAME}-${PKGVERSION}.txz" "${REPO_DIR}/${repo_name}:${version}:${supported_arch}/All/"
+                    log_message "✅ Package copied to: ${REPO_DIR}/${repo_name}:${version}:${supported_arch}/All/${PKGNAME}-${PKGVERSION}.txz"
+
+                    # Create symlink for the version folder pointing to the All package
+                    ln -s "../../All/${PKGNAME}-${PKGVERSION}.txz" "${REPO_DIR}/${repo_name}:${version}:${supported_arch}/${PKGNAME}-${PKGVERSION}.txz"
+                    log_message "✅ Symlink created: ${REPO_DIR}/${repo_name}:${version}:${supported_arch}/${PKGNAME}-${PKGVERSION}.txz"
+
                 done
             else
                 # Handle the specified architecture (if not 'any')
-                mkdir -p "${target_dir}"
-                cp "${REPO_DIR}/${PKGNAME}-${PKGVERSION}.txz" "${target_dir}/"
-                log_message "✅ Package copied to: ${target_dir}/${PKGNAME}-${PKGVERSION}.txz"
+                mkdir -p "${target_dir}/All"
+                cp "${REPO_DIR}/${PKGNAME}-${PKGVERSION}.txz" "${target_dir}/All/"
+                log_message "✅ Package copied to: ${target_dir}/All/${PKGNAME}-${PKGVERSION}.txz"
+
+                # Create symlink for the version folder pointing to the All package
+                ln -s "../../All/${PKGNAME}-${PKGVERSION}.txz" "${target_dir}/${PKGNAME}-${PKGVERSION}.txz"
+                log_message "✅ Symlink created: ${target_dir}/${PKGNAME}-${PKGVERSION}.txz"
             fi
         done
+
+        # Create the 'latest' symlink for the version
+        ln -s "${repo_name}:${version}:${arch}" "${REPO_DIR}/${repo_name}:${version}:${arch}/latest"
+        log_message "✅ Created 'latest' symlink pointing to: ${repo_name}:${version}:${arch}/latest"
     done
 }
+
+
 # Main script execution
 log_message "Starting the build process..."
 
