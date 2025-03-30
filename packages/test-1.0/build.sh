@@ -155,14 +155,33 @@ build_package() {
         mkdir -p "${REPO_DIR}"  # Create the directory if it doesn't exist
     fi
 
-    # Create the package (.txz), excluding build.sh, build.log, and .git files
-    pkg create -r "${PKGDIR_PATH}" -m "${MANIFEST_FILE}" -p /dev/null -o "${PKGDIR_PATH}" -x "*/build.sh" -x "*/build.log" -x "*/.git"
+    # Print the pkg create command with all attributes for debugging
+    log_message "Running pkg create with the following command:"
+    echo "pkg create -r ${PKGDIR_PATH} -m ${MANIFEST_FILE} -p /dev/null -o ${PKGDIR_PATH} -x '*/build.sh' -x '*/build.log' -x '*/.git'"
+
+    # Run the pkg create command and capture both stdout and stderr
+    create_output=$(pkg create -r "${PKGDIR_PATH}" -m "${MANIFEST_FILE}" -p /dev/null -o "${PKGDIR_PATH}" -x "*/build.sh" -x "*/build.log" -x "*/.git" 2>&1)
+
+    # Print the output from the pkg create command (including errors)
+    log_message "✅ pkg create output:\n$create_output"
+
+    # Debugging: Check if the .txz package exists after creation
+    if [ ! -f "${PKGDIR_PATH}/${PKGNAME}-${PKGVERSION}.txz" ]; then
+        log_message "🚨 .txz package was not created in the expected location: ${PKGDIR_PATH}/${PKGNAME}-${PKGVERSION}.txz"
+        exit 1
+    fi
+
+    log_message "✅ Package created: ${PKGDIR_PATH}/${PKGNAME}-${PKGVERSION}.txz"
+
+    # Print the contents of the directory after the package creation
+    log_message "Listing contents of the package directory after creation (${PKGDIR_PATH}):"
+    ls -al "${PKGDIR_PATH}"
 
     # Move the package to the correct repo directory
     mv "${PKGDIR_PATH}/${PKGNAME}-${PKGVERSION}.txz" "${REPO_DIR}/"
 
     # Verify the path where the package is created and log the success message
-    log_message "✅ Package created and moved to: ${REPO_DIR}/${PKGNAME}-${PKGVERSION}.txz"
+    log_message "✅ Package moved to: ${REPO_DIR}/${PKGNAME}-${PKGVERSION}.txz"
 }
 
 # Function to populate the repo directory with the built package
