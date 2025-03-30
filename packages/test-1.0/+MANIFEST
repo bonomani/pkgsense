@@ -10,5 +10,18 @@
   "licenses": ["BSD"],
   "desc": "Ce paquet est utilisé pour tester un dépôt personnalisé pfSense.",
   "flatsize": 1024,
-  "deps": {}
+  "deps": {},
+
+  "pfSense_versions": [
+    "pfsenseplus/23.09",
+    "pfsensece/2.7.2"
+  ],
+  
+  "architectures": [
+    "amd64",
+    "i386",
+    "arm64",
+    "any"
+  ]
 }
+
