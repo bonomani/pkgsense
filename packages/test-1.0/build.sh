@@ -143,8 +143,9 @@ check_file_structure() {
 }
 
 # Function to create the package
+# Function to create the package
 build_package() {
-    log_message "🛠  Building the package (.txz)..."
+    log_message "🛠  Building the package (.pkg)..."
 
     # Ensure the repo directory exists and is empty before creating the package
     if [ -d "${REPO_DIR}" ]; then
@@ -160,25 +161,36 @@ build_package() {
     echo "pkg create -r ${PKGDIR_PATH} -m ${MANIFEST_FILE} -p /dev/null -o ${REPO_DIR} -x '${REPO_DIR}/*' -x '*/build.sh' -x '*/build.log' -x '*/.git'"
 
     # Run the pkg create command with verbose output and capture both stdout and stderr
-    create_output=$(pkg create -v -r "${PKGDIR_PATH}" -m "${MANIFEST_FILE}" -p /dev/null -o "${REPO_DIR}" -x "${REPO_DIR}/*" -x "*/build.sh" -x "*/build.log" -x "*/.git" -t txz 2>&1)
-    #pkg create -r /tmp/cirrus-ci-build/packages/test-1.0 -m /tmp/cirrus-ci-build/packages/test-1.0/+MANIFEST
-    ls -al repo 
+    create_output=$(pkg create -v -r "${PKGDIR_PATH}" -m "${MANIFEST_FILE}" -p /dev/null -o "${REPO_DIR}" -x "${REPO_DIR}/*" -x "*/build.sh" -x "*/build.log" -x "*/.git" 2>&1)
+
     # Print the output from the pkg create command (including errors)
     log_message "✅ pkg create output:\n$create_output"
 
-    # Debugging: Check if the .txz package exists after creation
-    if [ ! -f "${REPO_DIR}/${PKGNAME}-${PKGVERSION}.txz" ]; then
-        log_message "🚨 .txz package was not created in the expected location: ${REPO_DIR}/${PKGNAME}-${PKGVERSION}.txz"
+    # Debugging: Check if the .pkg package exists after creation
+    if [ ! -f "${REPO_DIR}/${PKGNAME}-${PKGVERSION}.pkg" ]; then
+        log_message "🚨 .pkg package was not created in the expected location: ${REPO_DIR}/${PKGNAME}-${PKGVERSION}.pkg"
         exit 1
     fi
 
-    log_message "✅ Package created: ${REPO_DIR}/${PKGNAME}-${PKGVERSION}.txz"
+    log_message "✅ .pkg Package created: ${REPO_DIR}/${PKGNAME}-${PKGVERSION}.pkg"
 
-    # Print the contents of the directory after the package creation
+    # Renaming the .pkg file to .txz
+    log_message "Renaming .pkg file to .txz..."
+    mv "${REPO_DIR}/${PKGNAME}-${PKGVERSION}.pkg" "${REPO_DIR}/${PKGNAME}-${PKGVERSION}.txz"
+
+    # Verify the renamed .txz file exists
+    if [ ! -f "${REPO_DIR}/${PKGNAME}-${PKGVERSION}.txz" ]; then
+        log_message "🚨 .txz package was not created after renaming."
+        exit 1
+    fi
+
+    log_message "✅ Package renamed to: ${REPO_DIR}/${PKGNAME}-${PKGVERSION}.txz"
+
+    # Print the contents of the directory after the package creation and renaming
     log_message "Listing contents of the repo directory after creation (${REPO_DIR}):"
     ls -al "${REPO_DIR}"
-
 }
+
 
 # Function to populate the repo directory with the built package
 populate_repo() {
@@ -186,33 +198,36 @@ populate_repo() {
 
     # Loop through repos and versions (REPOS now contains repo_name/version format)
     for repo_version in $(echo "$REPOS" | tr -d '"'); do
-        # Define the target directory for the package using repo/version directly
-        target_dir="${REPO_DIR}/${repo_version}"
+        # Extract repo name and version
+        repo_name=$(echo "$repo_version" | cut -d '/' -f1)
+        version=$(echo "$repo_version" | cut -d '/' -f2)
 
-        log_message "Processing repo/version: $repo_version"
+        log_message "Processing repo/version: $repo_name/$version"
 
         # Loop through architectures
         for arch in $(echo "$ARCHS" | tr -d '"'); do
             log_message "Processing architecture: $arch"
 
+            # Create the directory structure for the package in the format: repo_name:version:arch
+            target_dir="${REPO_DIR}/${repo_name}:${version}:${arch}"
+
             # If the architecture is 'any', copy to all supported architectures
             if [[ "$arch" == "any" ]]; then
                 for supported_arch in "amd64" "i386" "arm64" "armv7" "powerpc64" "mips64" "aarch64"; do
                     log_message "Copying to supported architecture: $supported_arch"
-                    mkdir -p "${target_dir}/${supported_arch}"
-                    cp "${REPO_DIR}/${PKGNAME}-${PKGVERSION}.txz" "${target_dir}/${supported_arch}/"
-                    log_message "✅ Package copied to: ${target_dir}/${supported_arch}/${PKGNAME}-${PKGVERSION}.txz"
+                    mkdir -p "${REPO_DIR}/${repo_name}:${version}:${supported_arch}"
+                    cp "${REPO_DIR}/${PKGNAME}-${PKGVERSION}.txz" "${REPO_DIR}/${repo_name}:${version}:${supported_arch}/"
+                    log_message "✅ Package copied to: ${REPO_DIR}/${repo_name}:${version}:${supported_arch}/${PKGNAME}-${PKGVERSION}.txz"
                 done
             else
                 # Handle the specified architecture (if not 'any')
-                mkdir -p "${target_dir}/${arch}"
-                cp "${REPO_DIR}/${PKGNAME}-${PKGVERSION}.txz" "${target_dir}/${arch}/"
-                log_message "✅ Package copied to: ${target_dir}/${arch}/${PKGNAME}-${PKGVERSION}.txz"
+                mkdir -p "${target_dir}"
+                cp "${REPO_DIR}/${PKGNAME}-${PKGVERSION}.txz" "${target_dir}/"
+                log_message "✅ Package copied to: ${target_dir}/${PKGNAME}-${PKGVERSION}.txz"
             fi
         done
     done
 }
-
 # Main script execution
 log_message "Starting the build process..."
 
