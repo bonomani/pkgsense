@@ -15,7 +15,6 @@ task:
           cd "$pkg_dir"
           echo "Current directory: $(pwd)"
           echo "🛠 Building package: $(basename $pkg_dir)"
-          chmod +x ./build.sh
           sh ./build.sh  # Build each package dynamically
           cd .. 
         fi

@@ -3,30 +3,41 @@
 
 set -e  # Exit immediately if a command fails
 
-# Get the package name and version dynamically from the current folder
-PKGDIR_NAME=$(basename "$PWD")  # This assumes the current folder is named as "pkgname-version"
-PKGNAME=$(echo "$PKGDIR_NAME" | cut -d '-' -f1)
-PKGVERSION=$(echo "$PKGDIR_NAME" | cut -d '-' -f2)
+# Log file for the build process
+LOG_FILE="build.log"
 
-# If the folder is structured as "name-version", this will extract them
-log_message "Detected package name: $PKGNAME"
-log_message "Detected package version: $PKGVERSION"
+# Define the log_message function first to avoid "not found" errors
+log_message() {
+    echo "$(date +'%Y-%m-%d %H:%M:%S') - $1" | tee -a "${LOG_FILE}"
+}
 
-# Full path of the current package directory
+# Full path of the current package directory (define first)
 PKGDIR_PATH=$(pwd)
 log_message "Full path of the package directory: ${PKGDIR_PATH}"
+
+# Function to get the package name and version dynamically from the current folder
+get_package_info() {
+    PKGDIR_NAME=$(basename "$PKGDIR_PATH")  # This assumes the current folder is named as "pkgname-version"
+    
+    # Ensure the folder is in the "pkgname-version" format
+    if [[ ! "$PKGDIR_NAME" =~ ^([a-zA-Z0-9_-]+)-([0-9\.]+)$ ]]; then
+        log_message "🚨 Folder name must be in the format 'pkgname-version'."
+        exit 1
+    fi
+
+    PKGNAME=$(echo "$PKGDIR_NAME" | cut -d '-' -f1)
+    PKGVERSION=$(echo "$PKGDIR_NAME" | cut -d '-' -f2)
+    
+    log_message "Detected package name: $PKGNAME"
+    log_message "Detected package version: $PKGVERSION"
+}
+
+# Get the package name and version
+get_package_info
 
 # Define the repo directory and manifest path using the full path
 REPO_DIR="${PKGDIR_PATH}/repo"  # Repo directory will be inside the current folder
 MANIFEST_FILE="${PKGNAME}-${PKGVERSION}/+MANIFEST"  # Path to the +MANIFEST file
-
-# Log file for the build process
-LOG_FILE="build.log"
-
-# Function to log messages with timestamps
-log_message() {
-    echo "$(date +'%Y-%m-%d %H:%M:%S') - $1" | tee -a "${LOG_FILE}"
-}
 
 # Check for required commands
 check_command() {
@@ -81,10 +92,10 @@ validate_manifest() {
 # Function to parse the +MANIFEST file to extract necessary data
 parse_manifest() {
     log_message "Parsing +MANIFEST file..."
-    
+
     file_structure=$(jq -r '.file_structure' "${MANIFEST_FILE}")
     
-   # Extract the repo info from the +MANIFEST
+    # Extract the repo info from the +MANIFEST
     repo_info=$(jq -r '.repo[] | .name as $name | .versions[] | "\($name)/\(. )"' "${MANIFEST_FILE}")
     architectures=$(jq -r '.architectures | join(", ")' "${MANIFEST_FILE}")
 
@@ -99,7 +110,6 @@ parse_manifest() {
 
 # Function to check the file structure based on the +MANIFEST
 check_file_structure() {
-   
     log_message "Checking file structure..."
 
     # Loop through each entry in the file structure and check if files and directories exist
@@ -153,7 +163,6 @@ populate_repo() {
         done
     done
 }
-
 
 # Main script execution
 log_message "Starting the build process..."
