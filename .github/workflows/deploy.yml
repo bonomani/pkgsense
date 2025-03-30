@@ -1,0 +1,60 @@
+name: Deploy pfSense Packages to GitHub Pages
+
+on:
+  push:
+    branches:
+      - ci-build  # Trigger when a new commit is pushed to ci-build
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    # Checkout the ci-build branch
+    - name: Checkout ci-build branch
+      uses: actions/checkout@v2
+      with:
+        ref: ci-build
+
+    # Set up Git for pushing changes
+    - name: Set up Git
+      run: |
+        git config --global user.name "GitHub Actions"
+        git config --global user.email "actions@github.com"
+
+    # Clone the gh-pages branch for deployment
+    - name: Clone gh-pages branch
+      run: |
+        git clone --depth 1 --branch gh-pages https://github.com/bonomani/pkgsense.git gh-pages
+        cd gh-pages
+        git pull origin gh-pages
+
+    # Copy the built packages to gh-pages
+    - name: Copy built packages to gh-pages
+      run: |
+        for pkg_dir in packages/*; do
+          if [ -d "$pkg_dir" ]; then
+            pkg_name=$(basename "$pkg_dir")
+            cp -r "$pkg_dir/repo/*" "gh-pages/$pkg_name/"
+          fi
+        done
+
+    # Commit and push changes to GitHub Pages
+    - name: Commit and push changes to GitHub Pages
+      run: |
+        cd gh-pages
+        git add .
+        git commit -m "🔄 Auto-publish pfSense packages from GitHub Actions" || echo "✅ No changes to publish"
+        git push origin gh-pages
+
+    # Display the deployment URLs
+    - name: Display deployment links
+      run: |
+        echo "🌐 Deployed to: https://bonomani.github.io/pkgsense/"
+        for pkg_dir in packages/*; do
+          if [ -d "$pkg_dir" ]; then
+            pkg_name=$(basename "$pkg_dir")
+            echo "📦 Package: https://bonomani.github.io/pkgsense/$pkg_name/$pkg_name.txz"
+          fi
+        done
+

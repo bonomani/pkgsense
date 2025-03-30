@@ -1,0 +1,90 @@
+task:
+  name: Build and Deploy pfSense Packages
+  freebsd_instance:
+    image_family: freebsd-14-2
+
+  install_script:
+    - sudo pkg install -y pkg git
+
+  script:
+    - echo "🛠 Building all pfSense packages..."
+    - |
+      # Loop through each package directory and build them dynamically
+      for pkg_dir in packages/*; do
+        if [ -d "$pkg_dir" ]; then
+          cd "$pkg_dir"
+          echo "🛠 Building package: $(basename $pkg_dir)"
+          sh ./build.sh  # Build each package dynamically
+          cd ..
+        fi
+      done
+
+  artifacts:
+    packages_repo:
+      path: repo
+
+  env:
+    GH_TOKEN: ENCRYPTED[GH_TOKEN]
+
+  post_script:
+    # Git configuration for pushing to GitHub Pages
+    - git config --global user.name "Cirrus CI"
+    - git config --global user.email "ci@cirrus-ci.com"
+    - git clone --depth 1 --branch gh-pages https://bonomani:${GH_TOKEN}@github.com/bonomani/pkgsense.git gh-pages
+
+    # Dynamically handle multiple pfSense versions and architectures based on +MANIFEST
+    - |
+      for pkg_dir in packages/*; do
+        if [ -d "$pkg_dir" ]; then
+          # Extract pfSense versions and architectures from the +MANIFEST
+          pfSense_versions=$(grep -oP '(?<=^pfSense_versions:).*' "$pkg_dir/+MANIFEST")
+          architectures=$(grep -oP '(?<=^architectures:).*' "$pkg_dir/+MANIFEST")
+
+          # Handle multiple versions and architectures
+          IFS=', ' read -r -a versions <<< "$pfSense_versions"
+          IFS=', ' read -r -a archs <<< "$architectures"
+
+          for version in "${versions[@]}"; do
+            for arch in "${archs[@]}"; do
+              # Define the target directory structure dynamically
+              version_dir="repo/$version/$arch"
+
+              # Create the target directory for each version/architecture
+              mkdir -p "gh-pages/$version_dir"
+
+              # Copy the built package files to the correct directory
+              cp -r repo/* "gh-pages/$version_dir/"
+            done
+          done
+        fi
+      done
+
+    # Commit and push changes to GitHub Pages
+    - cd gh-pages
+    - touch .nojekyll  # Disable Jekyll processing on GitHub Pages
+    - git add .
+    - git commit -m "🔄 Auto-publish pfSense packages from Cirrus CI" || echo "✅ No changes to publish"
+    - git push origin gh-pages
+
+    # Display deployment URLs dynamically
+    - echo "🌐 Deployed to: https://bonomani.github.io/pkgsense/"
+    - |
+      for pkg_dir in packages/*; do
+        if [ -d "$pkg_dir" ]; then
+          pkg_name=$(basename "$pkg_dir")
+          pfSense_versions=$(grep -oP '(?<=^pfSense_versions:).*' "$pkg_dir/+MANIFEST")
+          architectures=$(grep -oP '(?<=^architectures:).*' "$pkg_dir/+MANIFEST")
+
+          # Handle multiple versions and architectures
+          IFS=', ' read -r -a versions <<< "$pfSense_versions"
+          IFS=', ' read -r -a archs <<< "$architectures"
+
+          for version in "${versions[@]}"; do
+            for arch in "${archs[@]}"; do
+              # Dynamically display URLs for each package version and architecture
+              echo "📦 Package: https://bonomani.github.io/pkgsense/$version/$arch/$pkg_name.txz"
+            done
+          done
+        fi
+      done
+
