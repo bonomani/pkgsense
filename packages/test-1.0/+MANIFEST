@@ -11,17 +11,25 @@
   "desc": "Ce paquet est utilisé pour tester un dépôt personnalisé pfSense.",
   "flatsize": 1024,
   "deps": {},
-
-  "pfSense_versions": [
-    "pfsenseplus/23.09",
-    "pfsensece/2.7.2"
+  "repo": [
+    {
+      "name": "pfsenseplus",
+      "versions": ["23.09", "23.09.1"]
+    },
+    {
+      "name": "pfsensece",
+      "versions": ["2.7.1", "2.7.2"]
+    }
   ],
-  
-  "architectures": [
-    "amd64",
-    "i386",
-    "arm64",
-    "any"
-  ]
+  "architectures": ["amd64", "i386", "arm64", "any"],
+  "file_structure": {
+    "usr": {
+      "local": {
+        "etc": {
+          "test": ["test.txt"]
+        }
+      }
+    }
+  }
 }
 
