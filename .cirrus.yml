@@ -24,11 +24,11 @@ task:
     - git config --global user.name "Cirrus CI"
     - git config --global user.email "ci@cirrus-ci.com"
 
-    # Clone the repository (no specific branch is needed, fetch all branches)
+    # Clone the repository
     - git clone https://bonomani:${GH_TOKEN}@github.com/bonomani/pkgsense.git ci-build
-    - cd ci-build  # Navigate into the cloned repository
+    - cd ci-build
 
-    # Fetch all branches (in case there are other branches that are not fetched by default)
+    # Fetch all branches
     - git fetch --all
 
     # Check if the ci-build branch exists remotely, create it if it doesn't
@@ -42,8 +42,14 @@ task:
         git checkout ci-build  # Checkout the existing branch
       fi
 
-    # Copy the built packages to the ci-build branch
-    - cp -r repo/* ci-build/
+    # Ensure the repo folder exists and copy the built packages to the ci-build branch
+    - |
+      if [ -d "../repo" ]; then
+        cp -r ../repo/* .  # Copy the contents of the repo directory to the current (ci-build) directory
+        echo "✅ Copied built packages to ci-build."
+      else
+        echo "🚨 'repo' directory does not exist, skipping copy operation."
+      fi
 
     # Commit and push changes to the ci-build branch
     - git add .
