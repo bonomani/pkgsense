@@ -160,7 +160,7 @@ build_package() {
     echo "pkg create -r ${PKGDIR_PATH} -m ${MANIFEST_FILE} -p /dev/null -o ${REPO_DIR} -x '${REPO_DIR}/*' -x '*/build.sh' -x '*/build.log' -x '*/.git'"
 
     # Run the pkg create command with verbose output and capture both stdout and stderr
-    create_output=$(pkg create -v -r "${PKGDIR_PATH}" -m "${MANIFEST_FILE}" -p /dev/null -o "${REPO_DIR}" -x "${REPO_DIR}/*" -x "*/build.sh" -x "*/build.log" -x "*/.git -t txz" 2>&1)
+    create_output=$(pkg create -v -r "${PKGDIR_PATH}" -m "${MANIFEST_FILE}" -p /dev/null -o "${REPO_DIR}" -x "${REPO_DIR}/*" -x "*/build.sh" -x "*/build.log" -x "*/.git" -t txz 2>&1)
     #pkg create -r /tmp/cirrus-ci-build/packages/test-1.0 -m /tmp/cirrus-ci-build/packages/test-1.0/+MANIFEST
     ls -al repo 
     # Print the output from the pkg create command (including errors)
