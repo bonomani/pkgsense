@@ -99,7 +99,8 @@ parse_manifest() {
     
     # Extract the repo info from the +MANIFEST
     repo_info=$(jq -r '.repo[] | .name as $name | .versions[] | "\($name)/\(. )"' "${MANIFEST_FILE}")
-    architectures=$(jq -r '.architectures | join(", ")' "${MANIFEST_FILE}")
+    #architectures=$(jq -r '.architectures | join(", ")' "${MANIFEST_FILE}")
+    architectures=$(jq -r '.architectures[]' "${MANIFEST_FILE}")  # This will extract each architecture into a separate line
 
     log_message "✅ Parsed repo and architectures."
 
