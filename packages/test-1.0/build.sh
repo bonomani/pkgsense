@@ -175,16 +175,16 @@ build_package() {
     log_message "✅ .pkg Package created: ${REPO_DIR}/${PKGNAME}-${PKGVERSION}.pkg"
 
     # Renaming the .pkg file to .txz
-    log_message "Renaming .pkg file to .txz..."
-    mv "${REPO_DIR}/${PKGNAME}-${PKGVERSION}.pkg" "${REPO_DIR}/${PKGNAME}-${PKGVERSION}.txz"
+#    log_message "Renaming .pkg file to .txz..."
+#    mv "${REPO_DIR}/${PKGNAME}-${PKGVERSION}.pkg" "${REPO_DIR}/${PKGNAME}-${PKGVERSION}.txz"
 
     # Verify the renamed .txz file exists
-    if [ ! -f "${REPO_DIR}/${PKGNAME}-${PKGVERSION}.txz" ]; then
-        log_message "🚨 .txz package was not created after renaming."
-        exit 1
-    fi
+#    if [ ! -f "${REPO_DIR}/${PKGNAME}-${PKGVERSION}.txz" ]; then
+#        log_message "🚨 .txz package was not created after renaming."
+#        exit 1
+#    fi
 
-    log_message "✅ Package renamed to: ${REPO_DIR}/${PKGNAME}-${PKGVERSION}.txz"
+#    log_message "✅ Package renamed to: ${REPO_DIR}/${PKGNAME}-${PKGVERSION}.txz"
 
     # Print the contents of the directory after the package creation and renaming
     log_message "Listing contents of the repo directory after creation (${REPO_DIR}):"
