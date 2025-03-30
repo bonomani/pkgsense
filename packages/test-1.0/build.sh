@@ -206,10 +206,11 @@ populate_repo() {
             cp "${REPO_DIR}/${PKGNAME}-${PKGVERSION}.pkg" "${target_dir}/All/"
             log_message "✅ Package copied to: ${target_dir}/All/${PKGNAME}-${PKGVERSION}.pkg"
 
-            # Remove the original package from the repo directory after copying it
-            rm -f "${REPO_DIR}/${PKGNAME}-${PKGVERSION}.pkg"
-            log_message "✅ Original package removed from: ${REPO_DIR}/${PKGNAME}-${PKGVERSION}.pkg"
         done
+        # Remove the original package from the repo directory after copying it
+        rm -f "${REPO_DIR}/${PKGNAME}-${PKGVERSION}.pkg"
+        log_message "✅ Original package removed from: ${REPO_DIR}/${PKGNAME}-${PKGVERSION}.pkg"
+
     done
 }
 
