@@ -13,8 +13,8 @@ task:
        bash ./create_repo.sh
 
   artifacts:
-    packages_repo:
-      path: repo
+  - path: repo
+    destination: repo  # Optional: The destination where the artifact will be uploaded in your CI system
 
   env:
     GH_TOKEN: ENCRYPTED[GH_TOKEN]
