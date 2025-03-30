@@ -54,15 +54,17 @@ done
 
 # Create the FreeBSD repository metadata using pkg repo
 log_message "🛠 Creating FreeBSD repository metadata..."
-pkg repo "${GLOBAL_REPO_DIR}"
 
-log_message "✅ Repository metadata created in ${GLOBAL_REPO_DIR}."
+# Run pkg repo on the 'All/' directory within each version-specific repo folder (this will include the metadata generation)
+for repo_dir in "${GLOBAL_REPO_DIR}"/*; do
+    if [ -d "${repo_dir}/All" ]; then
+        log_message "Running pkg repo for: ${repo_dir}"
+        pkg repo "${repo_dir}"
+        log_message "✅ Repository metadata created for: ${repo_dir}"
+    fi
+done
 
-# Final verification of the repo directory
-log_message "Listing contents of the repo directory (${GLOBAL_REPO_DIR}):"
-ls -al "${GLOBAL_REPO_DIR}"
-
-# Create the 'latest' symlink at the repo level for the most recent version
+# Create the 'latest' symlink for each package version at the repo level
 log_message "🛠 Creating 'latest' symlinks at the repo level for the most recent version..."
 
 for repo_version in $(echo "$REPOS" | tr -d '"'); do
@@ -84,9 +86,9 @@ for repo_version in $(echo "$REPOS" | tr -d '"'); do
     done
 done
 
-# Verify the final repo structure with symlinks
-log_message "Listing final contents of the repo directory with symlinks:"
+# Final verification of the repo directory
+log_message "Listing contents of the repo directory (${GLOBAL_REPO_DIR}):"
 ls -al "${GLOBAL_REPO_DIR}"
 
-log_message "✅ Repo structure and symlinks created successfully."
+log_message "✅ Repo metadata created and 'latest' symlinks established."
 
