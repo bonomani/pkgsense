@@ -4,7 +4,7 @@ task:
     image_family: freebsd-14-2
 
   install_script:
-    - sudo pkg install -y pkg git
+    - sudo pkg install -y pkg git bash jq 
 
   script:
     - echo "🛠 Building all pfSense packages..."
