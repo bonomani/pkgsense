@@ -7,18 +7,10 @@ task:
     - sudo pkg install -y pkg git bash jq 
 
   script:
-    - echo "🛠 Building all pfSense packages..."
+    - echo "🛠  Creating and populating repository..."
     - |
-      # Loop through each package directory and build them dynamically
-      for pkg_dir in packages/*; do
-        if [ -d "$pkg_dir" ]; then
-          cd "$pkg_dir"
-          echo "Current directory: $(pwd)"
-          echo "🛠 Building package: $(basename $pkg_dir)"
-          bash ./build.sh  # Build each package dynamically
-          cd .. 
-        fi
-      done
+    # Run the script to populate the repo and generate metadata
+    bash ./create_repo.sh
 
   artifacts:
     packages_repo:
