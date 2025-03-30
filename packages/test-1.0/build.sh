@@ -144,9 +144,8 @@ check_file_structure() {
 }
 
 # Function to create the package
-# Function to create the package
 build_package() {
-    log_message "🛠  Building the package (.pkg)..."
+    log_message "🛠   Building the package (.pkg)..."
 
     # Ensure the repo directory exists and is empty before creating the package
     if [ -d "${REPO_DIR}" ]; then
@@ -175,24 +174,9 @@ build_package() {
 
     log_message "✅ .pkg Package created: ${REPO_DIR}/${PKGNAME}-${PKGVERSION}.pkg"
 
-    # Renaming the .pkg file to .txz
-#    log_message "Renaming .pkg file to .txz..."
-#    mv "${REPO_DIR}/${PKGNAME}-${PKGVERSION}.pkg" "${REPO_DIR}/${PKGNAME}-${PKGVERSION}.txz"
-
-    # Verify the renamed .txz file exists
-#    if [ ! -f "${REPO_DIR}/${PKGNAME}-${PKGVERSION}.txz" ]; then
-#        log_message "🚨 .txz package was not created after renaming."
-#        exit 1
-#    fi
-
-#    log_message "✅ Package renamed to: ${REPO_DIR}/${PKGNAME}-${PKGVERSION}.txz"
-
-    # Print the contents of the directory after the package creation and renaming
-    log_message "Listing contents of the repo directory after creation (${REPO_DIR}):"
-    ls -al "${REPO_DIR}"
 }
 
-populate_repo() {
+populate_repo() { 
     log_message "📂 Populating repo directory..."
 
     # Loop through repos and versions (REPOS now contains repo_name/version format)
@@ -215,12 +199,16 @@ populate_repo() {
             # Create the directory structure for the package in the format: repo_name:version:arch
             target_dir="${REPO_DIR}/${repo_name}:${version}:${arch}"
 
-            # Create the architecture folder and the All folder
-            mkdir -p "${target_dir}/All"
+            # Create the architecture folder
+            mkdir -p "${target_dir}"
 
-            # Copy the package to the All directory
+            # Copy the package directly to the architecture-specific folder (no All folder)
             cp "${REPO_DIR}/${PKGNAME}-${PKGVERSION}.pkg" "${target_dir}/All/"
             log_message "✅ Package copied to: ${target_dir}/All/${PKGNAME}-${PKGVERSION}.pkg"
+
+            # Remove the original package from the repo directory after copying it
+            rm -f "${REPO_DIR}/${PKGNAME}-${PKGVERSION}.pkg"
+            log_message "✅ Original package removed from: ${REPO_DIR}/${PKGNAME}-${PKGVERSION}.pkg"
         done
     done
 }

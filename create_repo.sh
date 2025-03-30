@@ -55,39 +55,46 @@ done
 # Create the FreeBSD repository metadata using pkg repo
 log_message "🛠 Creating FreeBSD repository metadata..."
 
-# Run pkg repo on the 'All/' directory within each version-specific repo folder (this will include the metadata generation)
+# Run pkg repo on the parent folder of 'All/' directory
+log_message "🛠 Generating metadata by running pkg repo on the parent folder of 'All/'..."
+
 for repo_dir in "${GLOBAL_REPO_DIR}"/*; do
+    # Check if the directory contains the 'All/' directory
     if [ -d "${repo_dir}/All" ]; then
         log_message "Running pkg repo for: ${repo_dir}"
-	ls -al "${repo_dir}/All"
-        pkg repo "${repo_dir}/All"
-        log_message "✅ Repository metadata created for: ${repo_dir}/All"
+
+        # List the contents of the 'All' directory for verification
+        ls -al "${repo_dir}/All"
+
+        # Run pkg repo on the parent folder of All/ (the repo_dir itself)
+        pkg repo "${repo_dir}"
+
+        log_message "✅ Repository metadata created for: ${repo_dir}"
     fi
 done
 
-# Create the 'latest' symlink inside the 'latest/' directory for each repo/version
+# Create the 'latest' symlink inside the 'latest/' directory for each repo directory
 log_message "🛠 Creating 'latest' symlinks inside the 'latest/' directory..."
 
-for repo_version in $(echo "$REPOS" | tr -d '"'); do
-    repo_name=$(echo "$repo_version" | cut -d '/' -f1)
-    version=$(echo "$repo_version" | cut -d '/' -f2)
+# Loop through each repo directory in the global repo directory
+for repo_dir in "${GLOBAL_REPO_DIR}"/*; do
+    # Ensure that we only process directories
+    if [ -d "$repo_dir" ]; then
+        log_message "Processing repo directory: $repo_dir"
 
-    log_message "Processing repo/version: $repo_name/$version"
+        # Check if there's an 'All' directory inside the repo directory
+        if [ -d "${repo_dir}/All" ] && [ "$(ls -A ${repo_dir}/All)" ]; then
+            # Get the latest package by timestamp
+            latest_package=$(ls -t ${repo_dir}/All/*.txz | head -n 1)
 
-    # Loop through architectures
-    for arch in $(echo "$ARCHS" | tr -d '"'); do
-        target_dir="${GLOBAL_REPO_DIR}/${repo_name}:${version}:${arch}"
+            # Ensure the 'latest' directory exists
+            mkdir -p "${repo_dir}/latest"
 
-        # Check if there's a package in the repo directory for the latest version
-        if [ -d "${target_dir}/All" ] && [ "$(ls -A ${target_dir}/All)" ]; then
-            latest_package=$(ls -t ${target_dir}/All/*.txz | head -n 1)  # Get the latest package by timestamp
-            
-            # Create the 'latest' symlink in the 'latest' directory with a generic name (e.g., test.txz)
-            mkdir -p "${target_dir}/latest"  # Ensure the latest folder exists
-            ln -s "../../All/$(basename "$latest_package")" "${target_dir}/latest/test.txz"  # Symlink with a generic name
-            log_message "✅ 'latest' symlink created for: ${target_dir}/latest/test.txz"
+            # Create the symlink inside the 'latest' folder pointing to the most recent package
+            ln -s "../../All/$(basename "$latest_package")" "${repo_dir}/latest/$(basename "$latest_package")"
+            log_message "✅ 'latest' symlink created for: ${repo_dir}/latest/$(basename "$latest_package")"
         fi
-    done
+    fi
 done
 
 
