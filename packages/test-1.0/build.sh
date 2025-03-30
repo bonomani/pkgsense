@@ -37,7 +37,9 @@ get_package_info
 
 # Define the repo directory and manifest path using the full path
 REPO_DIR="${PKGDIR_PATH}/repo"  # Repo directory will be inside the current folder
-MANIFEST_FILE="${PKGNAME}-${PKGVERSION}/+MANIFEST"  # Path to the +MANIFEST file
+MANIFEST_FILE="${PKGDIR_PATH}/+MANIFEST"  # Full path to +MANIFEST file
+
+log_message "Looking for +MANIFEST at: ${MANIFEST_FILE}"
 
 # Check for required commands
 check_command() {
@@ -117,11 +119,14 @@ check_file_structure() {
         # Extract file path or directory
         path=$(echo "$entry" | jq -r '.path')
 
+        # Full path for the file or directory
+        full_path="${PKGDIR_PATH}/${path}"
+
         # Check if it's a directory or a file
         if [[ "$path" == */ ]]; then
-            check_directory_exists "${PKGNAME}-${PKGVERSION}/${path}"
+            check_directory_exists "$full_path"
         else
-            check_file_exists "${PKGNAME}-${PKGVERSION}/${path}"
+            check_file_exists "$full_path"
         fi
     done
 
@@ -133,9 +138,9 @@ build_package() {
     log_message "🛠 Building the package (.txz)..."
 
     # Create the package (.txz), excluding build.sh and build.log files
-    pkg create -r "${PKGNAME}-${PKGVERSION}" -m "${PKGNAME}-${PKGVERSION}/+MANIFEST" -p /dev/null -o "${PKGDIR_PATH}" -x "*/build.sh" -x "*/build.log" -x "*/.git"
+    pkg create -r "${PKGDIR_PATH}" -m "${MANIFEST_FILE}" -p /dev/null -o "${PKGDIR_PATH}/repo" -x "*/build.sh" -x "*/build.log" -x "*/.git"
 
-    log_message "✅ Package created: ${PKGDIR_PATH}/${PKGNAME}-${PKGVERSION}.txz"
+    log_message "✅ Package created: ${PKGDIR_PATH}/repo/${PKGNAME}-${PKGVERSION}.txz"
 }
 
 # Function to populate the repo directory with the built package
@@ -144,22 +149,22 @@ populate_repo() {
 
     # Loop through repos and versions (REPOS now contains repo_name/version format)
     for repo_version in $(echo "$REPOS" | tr -d '"'); do
-        # Extract repo and version from repo_version
-        repo=$(echo "$repo_version" | cut -d '/' -f1)
-        version=$(echo "$repo_version" | cut -d '/' -f2)
+        # Define the target directory for the package using repo/version directly
+        target_dir="${REPO_DIR}/${repo_version}"
+
+        log_message "Processing repo/version: $repo_version"
 
         # Loop through architectures
         for arch in $(echo "$ARCHS" | tr -d '"'); do
-            # Define the target directory for the package
-            target_dir="${REPO_DIR}/${repo}/${version}/${arch}"
+            log_message "Processing architecture: $arch"
 
             # Create the directory structure for the package
-            mkdir -p "${target_dir}"
+            mkdir -p "${target_dir}/${arch}"
 
-            # Copy the built package to the correct repo/ directory
-            cp "${PKGDIR_PATH}/${PKGNAME}-${PKGVERSION}.txz" "${target_dir}/"
+            # Copy the built package to the correct repo/version/arch directory
+            cp "${PKGDIR_PATH}/${PKGNAME}-${PKGVERSION}.txz" "${target_dir}/${arch}/"
 
-            log_message "✅ Package copied to: ${target_dir}/${PKGNAME}-${PKGVERSION}.txz"
+            log_message "✅ Package copied to: ${target_dir}/${arch}/${PKGNAME}-${PKGVERSION}.txz"
         done
     done
 }
