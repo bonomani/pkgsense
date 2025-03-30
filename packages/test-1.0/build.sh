@@ -191,8 +191,6 @@ build_package() {
     ls -al "${REPO_DIR}"
 }
 
-
-# Function to populate the repo directory with the built package
 populate_repo() {
     log_message "📂 Populating repo directory..."
 
@@ -204,8 +202,13 @@ populate_repo() {
 
         log_message "Processing repo/version: $repo_name/$version"
 
-        # Loop through architectures
+        # Loop through architectures (without 'any' architecture)
         for arch in $(echo "$ARCHS" | tr -d '"'); do
+            # Skip 'any' architecture
+            if [[ "$arch" == "any" ]]; then
+                continue
+            fi
+
             log_message "Processing architecture: $arch"
 
             # Create the directory structure for the package in the format: repo_name:version:arch
