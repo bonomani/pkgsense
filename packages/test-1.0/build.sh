@@ -110,25 +110,34 @@ parse_manifest() {
     log_message "✅ Repositories and architectures parsed."
 }
 
+# Function to recursively check the file structure
+check_file_structure_recursive() {
+    local parent_path=$1
+    local structure=$2
+
+    # Loop through each entry in the structure and check if it's a file or directory
+    for key in $(echo "$structure" | jq -r 'keys[]'); do
+        local full_path="${parent_path}/${key}"
+
+        # If the value is an array, it's a file
+        if [[ "$(echo "$structure" | jq -r ".\"$key\" | type")" == "array" ]]; then
+            for file in $(echo "$structure" | jq -r ".\"$key\"[]"); do
+                check_file_exists "${full_path}/${file}"
+            done
+        # If the value is an object, it's a directory, so recurse
+        elif [[ "$(echo "$structure" | jq -r ".\"$key\" | type")" == "object" ]]; then
+            check_directory_exists "$full_path"
+            check_file_structure_recursive "$full_path" "$(echo "$structure" | jq -r ".\"$key\"")"
+        fi
+    done
+}
+
 # Function to check the file structure based on the +MANIFEST
 check_file_structure() {
     log_message "Checking file structure..."
 
-    # Loop through each entry in the file structure and check if files and directories exist
-    for entry in $(echo "$file_structure" | jq -r '.[]'); do
-        # Extract file path or directory
-        path=$(echo "$entry" | jq -r '.path')
-
-        # Full path for the file or directory
-        full_path="${PKGDIR_PATH}/${path}"
-
-        # Check if it's a directory or a file
-        if [[ "$path" == */ ]]; then
-            check_directory_exists "$full_path"
-        else
-            check_file_exists "$full_path"
-        fi
-    done
+    # Loop through the file structure and handle it based on the new format
+    check_file_structure_recursive "" "$file_structure"
 
     log_message "✅ File structure check completed."
 }
