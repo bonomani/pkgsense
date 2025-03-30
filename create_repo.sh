@@ -65,8 +65,8 @@ for repo_dir in "${GLOBAL_REPO_DIR}"/*; do
     fi
 done
 
-# Create the 'latest' symlink for each package version at the repo level
-log_message "🛠 Creating 'latest' symlinks at the repo level for the most recent version..."
+# Create the 'latest' symlink inside the 'latest/' directory for each repo/version
+log_message "🛠 Creating 'latest' symlinks inside the 'latest/' directory..."
 
 for repo_version in $(echo "$REPOS" | tr -d '"'); do
     repo_name=$(echo "$repo_version" | cut -d '/' -f1)
@@ -81,11 +81,15 @@ for repo_version in $(echo "$REPOS" | tr -d '"'); do
         # Check if there's a package in the repo directory for the latest version
         if [ -d "${target_dir}/All" ] && [ "$(ls -A ${target_dir}/All)" ]; then
             latest_package=$(ls -t ${target_dir}/All/*.txz | head -n 1)  # Get the latest package by timestamp
-            ln -s "${latest_package}" "${target_dir}/latest.txz"  # Create symlink to latest package
-            log_message "✅ 'latest' symlink created for: ${target_dir}/latest.txz"
+            
+            # Create the 'latest' symlink in the 'latest' directory with a generic name (e.g., test.txz)
+            mkdir -p "${target_dir}/latest"  # Ensure the latest folder exists
+            ln -s "../../All/$(basename "$latest_package")" "${target_dir}/latest/test.txz"  # Symlink with a generic name
+            log_message "✅ 'latest' symlink created for: ${target_dir}/latest/test.txz"
         fi
     done
 done
+
 
 # Final verification of the repo directory
 log_message "Listing contents of the repo directory (${GLOBAL_REPO_DIR}):"
