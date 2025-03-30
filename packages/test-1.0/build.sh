@@ -203,8 +203,8 @@ populate_repo() {
 
         log_message "Processing repo/version: $repo_name/$version"
 
-        # Loop through architectures (without 'any' architecture)
-        for arch in $(echo "$ARCHS" | tr -d '"'); do
+        # Loop through architectures (comma-separated string)
+        for arch in $ARCHS; do
             # Skip 'any' architecture
             if [[ "$arch" == "any" ]]; then
                 continue
