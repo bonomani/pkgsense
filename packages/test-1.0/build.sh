@@ -144,12 +144,25 @@ check_file_structure() {
 
 # Function to create the package
 build_package() {
-    log_message "🛠 Building the package (.txz)..."
+    log_message "🛠  Building the package (.txz)..."
 
-    # Create the package (.txz), excluding build.sh and build.log files
-    pkg create -r "${PKGDIR_PATH}" -m "${MANIFEST_FILE}" -p /dev/null -o "${PKGDIR_PATH}/repo" -x "*/build.sh" -x "*/build.log" -x "*/.git"
+    # Ensure the repo directory exists and is empty before creating the package
+    if [ -d "${REPO_DIR}" ]; then
+        log_message "✅ Repo directory exists. Cleaning up old files."
+        rm -rf "${REPO_DIR}/*"  # Remove all files in REPO_DIR (but not the directory itself)
+    else
+        log_message "✅ Repo directory does not exist. Creating it."
+        mkdir -p "${REPO_DIR}"  # Create the directory if it doesn't exist
+    fi
 
-    log_message "✅ Package created: ${PKGDIR_PATH}/repo/${PKGNAME}-${PKGVERSION}.txz"
+    # Create the package (.txz), excluding build.sh, build.log, and .git files
+    pkg create -r "${PKGDIR_PATH}" -m "${MANIFEST_FILE}" -p /dev/null -o "${PKGDIR_PATH}" -x "*/build.sh" -x "*/build.log" -x "*/.git"
+
+    # Move the package to the correct repo directory
+    mv "${PKGDIR_PATH}/${PKGNAME}-${PKGVERSION}.txz" "${REPO_DIR}/"
+
+    # Verify the path where the package is created and log the success message
+    log_message "✅ Package created and moved to: ${REPO_DIR}/${PKGNAME}-${PKGVERSION}.txz"
 }
 
 # Function to populate the repo directory with the built package
@@ -172,13 +185,13 @@ populate_repo() {
                 for supported_arch in "amd64" "i386" "arm64" "armv7" "powerpc64" "mips64" "aarch64"; do
                     log_message "Copying to supported architecture: $supported_arch"
                     mkdir -p "${target_dir}/${supported_arch}"
-                    cp "${PKGDIR_PATH}/repo/${PKGNAME}-${PKGVERSION}.txz" "${target_dir}/${supported_arch}/"
+                    cp "${REPO_DIR}/${PKGNAME}-${PKGVERSION}.txz" "${target_dir}/${supported_arch}/"
                     log_message "✅ Package copied to: ${target_dir}/${supported_arch}/${PKGNAME}-${PKGVERSION}.txz"
                 done
             else
                 # Handle the specified architecture (if not 'any')
                 mkdir -p "${target_dir}/${arch}"
-                cp "${PKGDIR_PATH}/repo/${PKGNAME}-${PKGVERSION}.txz" "${target_dir}/${arch}/"
+                cp "${REPO_DIR}/${PKGNAME}-${PKGVERSION}.txz" "${target_dir}/${arch}/"
                 log_message "✅ Package copied to: ${target_dir}/${arch}/${PKGNAME}-${PKGVERSION}.txz"
             fi
         done
