@@ -19,6 +19,7 @@ task:
   env:
     GH_TOKEN: ENCRYPTED[GH_TOKEN]
 
+
   post_script:
     # Git configuration for pushing to GitHub
     - git config --global user.name "Cirrus CI"
@@ -45,7 +46,7 @@ task:
     # Ensure the repo folder exists and copy the built packages to the ci-build branch
     - |
       if [ -d "../repo" ]; then
-        cp -r ../repo/* .  # Copy the contents of the repo directory to the current (ci-build) directory
+        cp -r ../repo/* ./  # Copy the contents of the repo directory to the current (ci-build) directory
         echo "✅ Copied built packages to ci-build."
       else
         echo "🚨 'repo' directory does not exist, skipping copy operation."
