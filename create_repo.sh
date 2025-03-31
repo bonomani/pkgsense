@@ -85,7 +85,7 @@ for repo_dir in "${GLOBAL_REPO_DIR}"/*; do
         # Check if there's an 'All' directory inside the repo directory
         if [ -d "${repo_dir}/All" ] && [ "$(ls -A ${repo_dir}/All)" ]; then
             # Get the latest package by timestamp
-            latest_package=$(ls -t ${repo_dir}/All/*.txz | head -n 1)
+            latest_package=$(ls -t ${repo_dir}/All/*.pkg | head -n 1)
 
             # Ensure the 'latest' directory exists
             mkdir -p "${repo_dir}/latest"
