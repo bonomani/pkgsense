@@ -52,10 +52,11 @@ task:
     # Step 5: Ensure the repo folder exists and copy the built packages to the ci-build branch
     - |
       if [ -d "/tmp/cirrus-ci-build/repo" ]; then
-        cp -r /tmp/cirrus-ci-build/repo/* .  # Copy the contents of the repo directory to the ci-build directory
-        echo "✅ Copied built packages to ci-build."
+      # Move the entire 'repo' directory to the ci-build directory
+        mv /tmp/cirrus-ci-build/repo /tmp/ci-build/
+        echo "✅ Moved built packages to ci-build."
       else
-        echo "🚨 'repo' directory does not exist, skipping copy operation."
+        echo "🚨 'repo' directory does not exist, skipping move operation."
       fi
 
     # Step 6: Commit and push changes to the ci-build branch
