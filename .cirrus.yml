@@ -47,7 +47,7 @@ task:
     # Step 4.5: Remove all files in /tmp/ci-build except for the git-related files
     - |
       echo "🧹 Cleaning up non-git files in /tmp/ci-build..."
-      find /tmp/ci-build -mindepth 1 ! -name '.git' -exec rm -rf {} +  # Remove all files except for .git directory
+      #find /tmp/ci-build -mindepth 1 ! -name '.git' -exec rm -rf {} +  # Remove all files except for .git directory
 
     # Step 5: Ensure the repo folder exists and copy the built packages to the ci-build branch
     - |
