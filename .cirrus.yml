@@ -18,21 +18,22 @@ task:
 
   env:
     GH_TOKEN: ENCRYPTED[GH_TOKEN]
-
-
   post_script:
     # Git configuration for pushing to GitHub
     - git config --global user.name "Cirrus CI"
     - git config --global user.email "ci@cirrus-ci.com"
 
-    # Clone the repository
-    - git clone https://bonomani:${GH_TOKEN}@github.com/bonomani/pkgsense.git ci-build
-    - cd ci-build
+    # Step 1: Create /tmp/ci-build directory
+    - mkdir -p /tmp/ci-build
+    - cd /tmp/ci-build
 
-    # Fetch all branches
+    # Step 2: Clone the repository into /tmp/ci-build
+    - git clone https://bonomani:${GH_TOKEN}@github.com/bonomani/pkgsense.git .
+
+    # Step 3: Fetch all branches to ensure the ci-build branch is available
     - git fetch --all
 
-    # Check if the ci-build branch exists remotely, create it if it doesn't
+    # Step 4: Check if the ci-build branch exists remotely, create it if it doesn't
     - |
       if ! git show-ref --verify --quiet refs/remotes/origin/ci-build; then
         echo "The 'ci-build' branch does not exist. Creating it..."
@@ -43,20 +44,24 @@ task:
         git checkout ci-build  # Checkout the existing branch
       fi
 
-    # Ensure the repo folder exists and copy the built packages to the ci-build branch
+    # Step 4.5: Remove all files in /tmp/ci-build except for the git-related files
     - |
-      if [ -d "../repo" ]; then
-        cp -r ../repo/* ./  # Copy the contents of the repo directory to the current (ci-build) directory
+      echo "🧹 Cleaning up non-git files in /tmp/ci-build..."
+      find /tmp/ci-build -mindepth 1 ! -name '.git' -exec rm -rf {} +  # Remove all files except for .git directory
+
+    # Step 5: Ensure the repo folder exists and copy the built packages to the ci-build branch
+    - |
+      if [ -d "/tmp/cirrus-ci-build/repo" ]; then
+        cp -r /tmp/cirrus-ci-build/repo/* .  # Copy the contents of the repo directory to the ci-build directory
         echo "✅ Copied built packages to ci-build."
       else
         echo "🚨 'repo' directory does not exist, skipping copy operation."
       fi
 
-    # Commit and push changes to the ci-build branch
+    # Step 6: Commit and push changes to the ci-build branch
     - git add .
     - git commit -m "🔄 Auto-publish pfSense packages from Cirrus CI"
     - git push origin ci-build
 
-    # Display the result URLs dynamically
+    # Step 7: Display the result URLs dynamically
     - echo "🌐 Packages pushed to: https://github.com/bonomani/pkgsense/tree/ci-build"
-
